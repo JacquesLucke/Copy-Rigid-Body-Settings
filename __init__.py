@@ -37,6 +37,41 @@ groupPrefix = "rigid body settings group"
 	
 	
 	
+def getLinkedObjects(object):
+	objects = []
+	groups = getGroupsWithPrefix(object, groupPrefix)
+	for group in groups:
+		objects.extend(getRigidBodyObjectsInGroup(group))
+	return objects
+					
+def getRigidBodyObjectsInGroup(group):
+	objects = []
+	for object in group.objects:
+		if object.rigid_body is not None: objects.append(object)
+	return objects
+	
+def copyRigidBodySettings(source, target):
+	target.angular_damping = source.angular_damping
+	target.collision_groups = source.collision_groups
+	target.collision_margin = source.collision_margin
+	target.deactivate_angular_velocity = source.deactivate_angular_velocity
+	target.deactivate_linear_velocity = source.deactivate_linear_velocity
+	target.enabled = source.enabled
+	target.friction = source.friction
+	target.kinematic = source.kinematic
+	target.linear_damping = source.linear_damping
+	target.mass = source.mass
+	target.mesh_source = source.mesh_source
+	target.restitution = source.restitution
+	target.type = source.type
+	target.use_deactivation = source.use_deactivation
+	target.use_deform = source.use_deform
+	target.use_margin = source.use_margin
+	target.use_start_deactivated = source.use_start_deactivated
+	target.use_start_deactivated = source.use_start_deactivated
+
+	
+	
 # interface
 #############################
 
@@ -55,7 +90,7 @@ class CopyRigidBodySettingsPanel(bpy.types.Panel):
 		layout = self.layout
 		
 		layout.operator("copy_rigid_body_settings.create_settings_group", text = "New Settings Group")
-		#layout.operator("copy_rigid_body_settings.copy_to_all_in_group", text = "Copy to Group Members")
+		layout.operator("copy_rigid_body_settings.copy_to_all_in_group", text = "Copy to Settings Group")
 		
 		
 # operators
@@ -68,6 +103,21 @@ class NewSettingsGroup(bpy.types.Operator):
 	
 	def execute(self, context):
 		group = newGroup(groupPrefix)
+		selectedObjects = getSelectedObjects()
+		for object in selectedObjects:
+			group.objects.link(object)
+		return{"FINISHED"}
+		
+class NewSettingsGroup(bpy.types.Operator):
+	bl_idname = "copy_rigid_body_settings.copy_to_all_in_group"
+	bl_label = "Copy Settings To Group Members"
+	bl_description = "Copy settings from active object to all group members."
+	
+	def execute(self, context):
+		activeObject = getActive()
+		objects = getLinkedObjects(activeObject)
+		for object in objects:
+			copyRigidBodySettings(activeObject.rigid_body, object.rigid_body)
 		return{"FINISHED"}
 		
 	

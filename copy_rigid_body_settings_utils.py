@@ -25,3 +25,15 @@ def getSelectedObjects():
 	
 def newGroup(name):
 	return bpy.data.groups.new(name)
+	
+def hasPrefix(name, prefix):
+	return name[:len(prefix)] == prefix
+	
+def getActive():
+	return bpy.context.scene.objects.active
+	
+def getGroupsWithPrefix(object, prefix):
+	groups = []
+	for group in object.users_group:
+		if hasPrefix(group.name, prefix): groups.append(group)
+	return groups
